@@ -20,10 +20,10 @@ def show_plot(results_cloud, results_fec, results_edge, dataset_label):
     
     # Bar width and x-axis positions
     x = range(len(algorithms))
-    bar_width = 0.25
+    bar_width = 0.1
     
     # Create a figure with 3 horizontally aligned subplots
-    fig, axs = plt.subplots(1, 3, figsize=(20, 6))
+    fig, axs = plt.subplots(1, 3, figsize=(12, 6))
     
     # Latency Comparison
     axs[0].bar([i - bar_width for i in x], cloud_latency, width=bar_width, label='Cloud', color='blue')

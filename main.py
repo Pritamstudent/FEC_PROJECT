@@ -42,10 +42,10 @@ def compare_and_plot(dataset_label, fog_nodes, modules):
     fog_nodes = shuffle_fog_nodes(fog_nodes)
     
     results_cloud = compare_algorithms(modules, fog_nodes, 'cloud')
-    results_fec = compare_algorithms(modules, fog_nodes, 'FEC')
+    results_fog = compare_algorithms(modules, fog_nodes, 'fog')
     results_edge = compare_algorithms(modules, fog_nodes, 'edge')
     # Plot combined results
-    show_plot(results_cloud, results_fec, results_edge, dataset_label)
+    show_plot(results_cloud, results_fog, results_edge, dataset_label)
 
 # Run comparisons and plots for all three datasets
 compare_and_plot('Dataset 1', fog_nodes_1, modules_1)

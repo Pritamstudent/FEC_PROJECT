@@ -20,10 +20,10 @@ def next_fit(modules, fog_nodes, environment):
                     total_latency += node['cloud_latency']
                     total_network_usage += node['cloud_bandwidth']
                     total_energy += node['cloud_power']
-                elif environment == 'FEC':
-                    total_latency += node['fec_latency']
-                    total_network_usage += node['fec_bandwidth']
-                    total_energy += node['fec_power']
+                elif environment == 'fog':
+                    total_latency += node['fog_latency']
+                    total_network_usage += node['fog_bandwidth']
+                    total_energy += node['fog_power']
                 elif environment == 'edge':
                     total_latency += node['edge_latency']
                     total_network_usage += node['edge_bandwidth']
@@ -57,10 +57,10 @@ def first_fit(modules, fog_nodes, environment):
                     total_latency += node['cloud_latency']
                     total_network_usage += node['cloud_bandwidth']
                     total_energy += node['cloud_power']
-                elif environment == 'FEC':
-                    total_latency += node['fec_latency']
-                    total_network_usage += node['fec_bandwidth']
-                    total_energy += node['fec_power']
+                elif environment == 'fog':
+                    total_latency += node['fog_latency']
+                    total_network_usage += node['fog_bandwidth']
+                    total_energy += node['fog_power']
                 elif environment == 'edge':
                     total_latency += node['edge_latency']
                     total_network_usage += node['edge_bandwidth']

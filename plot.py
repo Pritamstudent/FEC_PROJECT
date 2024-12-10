@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-def show_plot(results_cloud, results_fec, results_edge, dataset_label):
+def show_plot(results_cloud, results_fog, results_edge, dataset_label):
     algorithms = ['First Fit', 'Next Fit']
     
     # Metrics for Cloud
@@ -8,10 +8,10 @@ def show_plot(results_cloud, results_fec, results_edge, dataset_label):
     cloud_energy = [results_cloud['first_fit']['energy'], results_cloud['next_fit']['energy']]
     cloud_network_usage = [results_cloud['first_fit']['network_usage'], results_cloud['next_fit']['network_usage']]
     
-    # Metrics for FEC
-    fec_latency = [results_fec['first_fit']['latency'], results_fec['next_fit']['latency']]
-    fec_energy = [results_fec['first_fit']['energy'], results_fec['next_fit']['energy']]
-    fec_network_usage = [results_fec['first_fit']['network_usage'], results_fec['next_fit']['network_usage']]
+    # Metrics for fog
+    fog_latency = [results_fog['first_fit']['latency'], results_fog['next_fit']['latency']]
+    fog_energy = [results_fog['first_fit']['energy'], results_fog['next_fit']['energy']]
+    fog_network_usage = [results_fog['first_fit']['network_usage'], results_fog['next_fit']['network_usage']]
     
     # Metrics for Edge
     edge_latency = [results_edge['first_fit']['latency'], results_edge['next_fit']['latency']]
@@ -27,7 +27,7 @@ def show_plot(results_cloud, results_fec, results_edge, dataset_label):
     
     # Latency Comparison
     axs[0].bar([i - bar_width for i in x], cloud_latency, width=bar_width, label='Cloud', color='blue')
-    axs[0].bar([i for i in x], fec_latency, width=bar_width, label='FEC', color='green')
+    axs[0].bar([i for i in x], fog_latency, width=bar_width, label='Fog', color='green')
     axs[0].bar([i + bar_width for i in x], edge_latency, width=bar_width, label='Edge', color='orange')
     axs[0].set_title(f'Latency Comparison ({dataset_label})')
     axs[0].set_ylabel('Total Latency (ms)')
@@ -37,7 +37,7 @@ def show_plot(results_cloud, results_fec, results_edge, dataset_label):
     
     # Energy Comparison
     axs[1].bar([i - bar_width for i in x], cloud_energy, width=bar_width, label='Cloud', color='blue')
-    axs[1].bar([i for i in x], fec_energy, width=bar_width, label='FEC', color='green')
+    axs[1].bar([i for i in x], fog_energy, width=bar_width, label='Fog', color='green')
     axs[1].bar([i + bar_width for i in x], edge_energy, width=bar_width, label='Edge', color='orange')
     axs[1].set_title(f'Energy Comparison ({dataset_label})')
     axs[1].set_ylabel('Total Energy (W)')
@@ -47,7 +47,7 @@ def show_plot(results_cloud, results_fec, results_edge, dataset_label):
     
     # Network Usage Comparison
     axs[2].bar([i - bar_width for i in x], cloud_network_usage, width=bar_width, label='Cloud', color='blue')
-    axs[2].bar([i for i in x], fec_network_usage, width=bar_width, label='FEC', color='green')
+    axs[2].bar([i for i in x], fog_network_usage, width=bar_width, label='Fog', color='green')
     axs[2].bar([i + bar_width for i in x], edge_network_usage, width=bar_width, label='Edge', color='orange')
     axs[2].set_title(f'Network Usage Comparison ({dataset_label})')
     axs[2].set_ylabel('Total Network Usage (Mbps)')

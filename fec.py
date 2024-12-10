@@ -1,71 +1,7 @@
 import time
+import matplotlib.pyplot as plt
+from algorithms import first_fit, next_fit
 
-def first_fit(modules, fog_nodes, environment):
-    nodes_copy = [node.copy() for node in fog_nodes]  # Ensure fog_nodes is not modified globally
-    placed_count = 0
-    total_latency = 0
-    total_energy = 0
-    total_network_usage = 0
-   
-    for module in modules:
-        placed = False
-        for node in nodes_copy:
-            if node['cpu'] >= module['cpu'] and node['memory'] >= module['memory']:
-                node['cpu'] -= module['cpu']
-                node['memory'] -= module['memory']
-               
-                if environment == 'cloud':
-                    total_latency += node['cloud_latency']
-                    total_network_usage += node['cloud_network_usage']
-                    total_energy += (module['cpu'] * node['energy_per_cpu']) + (module['memory'] * node['energy_per_memory'])
-                elif environment == 'FEC':
-                    total_latency += node['fec_latency']
-                    total_network_usage += node['fec_network_usage']
-                    total_energy += (module['cpu'] * node['energy_per_cpu']) + (module['memory'] * node['energy_per_memory'])
-               
-                print(f"Module {module['id']} placed on Node {node['id']} ({environment})")
-                placed = True
-                placed_count += 1
-                break
-        if not placed:
-            print(f"Module {module['id']} could not be placed.")
-   
-    return placed_count, total_latency, total_energy, total_network_usage, nodes_copy
-
-def next_fit(modules, fog_nodes, environment):
-    nodes_copy = [node.copy() for node in fog_nodes]  # Ensure fog_nodes is not modified globally
-    last_index = 0
-    placed_count = 0
-    total_latency = 0
-    total_energy = 0
-    total_network_usage = 0
-   
-    for module in modules:
-        placed = False
-        for i in range(last_index, len(nodes_copy)):
-            node = nodes_copy[i]
-            if node['cpu'] >= module['cpu'] and node['memory'] >= module['memory']:
-                node['cpu'] -= module['cpu']
-                node['memory'] -= module['memory']
-               
-                if environment == 'cloud':
-                    total_latency += node['cloud_latency']
-                    total_network_usage += node['cloud_network_usage']
-                    total_energy += (module['cpu'] * node['energy_per_cpu']) + (module['memory'] * node['energy_per_memory'])
-                elif environment == 'FEC':
-                    total_latency += node['fec_latency']
-                    total_network_usage += node['fec_network_usage']
-                    total_energy += (module['cpu'] * node['energy_per_cpu']) + (module['memory'] * node['energy_per_memory'])
-               
-                print(f"Module {module['id']} placed on Node {node['id']} ({environment})")
-                last_index = i
-                placed = True
-                placed_count += 1
-                break
-        if not placed:
-            print(f"Module {module['id']} could not be placed.")
-   
-    return placed_count, total_latency, total_energy, total_network_usage, nodes_copy
 
 def compare_algorithms(modules, fog_nodes, environment):
     print(f"\nComparing {environment} environment - {len(modules)} modules and {len(fog_nodes)} fog nodes")
@@ -81,73 +17,104 @@ def compare_algorithms(modules, fog_nodes, environment):
     next_fit_time = time.time() - start_time
    
     print("\nComparison Results:")
-    print(f"{'Algorithm':<15}{'Placed Modules':<15}{'Total Latency (ms)':<20}{'Total Energy (J)':<20}{'Total Network Usage (MB)':<20}{'Execution Time (s)'}")
+    print(f"{'Algorithm':<15}{'Placed Modules':<15}{'Total Latency (ms)':<20}{'Total Energy (W)':<20}{'Total Network Usage (Mbps)':<20}{'Execution Time (s)'}")
     print("-" * 100)
    
     print(f"{'First Fit':<15}{first_fit_placed:<15}{first_fit_latency:<20}{first_fit_energy:<20}{first_fit_network:<20}{first_fit_time:.6f}")
     print(f"{'Next Fit':<15}{next_fit_placed:<15}{next_fit_latency:<20}{next_fit_energy:<20}{next_fit_network:<20}{next_fit_time:.6f}")
+   
+    return {
+        'first_fit': {
+            'latency': first_fit_latency,
+            'energy': first_fit_energy,
+            'network_usage': first_fit_network,
+        },
+        'next_fit': {
+            'latency': next_fit_latency,
+            'energy': next_fit_energy,
+            'network_usage': next_fit_network,
+        }
+    }
 
-# Test Data 1: Balanced modules and nodes
-modules1 = [
-    {'id': 1, 'cpu': 10, 'memory': 20},
-    {'id': 2, 'cpu': 15, 'memory': 25},
-    {'id': 3, 'cpu': 20, 'memory': 30},
-    {'id': 4, 'cpu': 25, 'memory': 35},
-    {'id': 5, 'cpu': 30, 'memory': 40},
-    {'id': 6, 'cpu': 15, 'memory': 15},
-    {'id': 7, 'cpu': 10, 'memory': 10},
-    {'id': 8, 'cpu': 20, 'memory': 25},
-]
 
-fog_nodes1 = [
-    {'id': 'A', 'cpu': 50, 'memory': 60, 'cloud_latency': 5, 'fec_latency': 15, 'cloud_network_usage': 100, 'fec_network_usage': 300, 'energy_per_cpu': 0.5, 'energy_per_memory': 0.3},
-    {'id': 'B', 'cpu': 50, 'memory': 50, 'cloud_latency': 8, 'fec_latency': 18, 'cloud_network_usage': 120, 'fec_network_usage': 320, 'energy_per_cpu': 0.4, 'energy_per_memory': 0.2},
-    {'id': 'C', 'cpu': 40, 'memory': 40, 'cloud_latency': 6, 'fec_latency': 16, 'cloud_network_usage': 110, 'fec_network_usage': 310, 'energy_per_cpu': 0.6, 'energy_per_memory': 0.4},
-]
+def plot_combined_comparison(results_cloud, results_fec, results_edge, dataset_label):
+    algorithms = ['First Fit', 'Next Fit']
+    
+    # Metrics for Cloud
+    cloud_latency = [results_cloud['first_fit']['latency'], results_cloud['next_fit']['latency']]
+    cloud_energy = [results_cloud['first_fit']['energy'], results_cloud['next_fit']['energy']]
+    cloud_network_usage = [results_cloud['first_fit']['network_usage'], results_cloud['next_fit']['network_usage']]
+    
+    # Metrics for FEC
+    fec_latency = [results_fec['first_fit']['latency'], results_fec['next_fit']['latency']]
+    fec_energy = [results_fec['first_fit']['energy'], results_fec['next_fit']['energy']]
+    fec_network_usage = [results_fec['first_fit']['network_usage'], results_fec['next_fit']['network_usage']]
+    
+    # Metrics for Edge
+    edge_latency = [results_edge['first_fit']['latency'], results_edge['next_fit']['latency']]
+    edge_energy = [results_edge['first_fit']['energy'], results_edge['next_fit']['energy']]
+    edge_network_usage = [results_edge['first_fit']['network_usage'], results_edge['next_fit']['network_usage']]
+    
+    # Bar width and x-axis positions
+    x = range(len(algorithms))
+    bar_width = 0.25
+    
+    # Create a figure with 3 horizontally aligned subplots
+    fig, axs = plt.subplots(1, 3, figsize=(20, 6))
+    
+    # Latency Comparison
+    axs[0].bar([i - bar_width for i in x], cloud_latency, width=bar_width, label='Cloud', color='blue')
+    axs[0].bar([i for i in x], fec_latency, width=bar_width, label='FEC', color='green')
+    axs[0].bar([i + bar_width for i in x], edge_latency, width=bar_width, label='Edge', color='orange')
+    axs[0].set_title(f'Latency Comparison ({dataset_label})')
+    axs[0].set_ylabel('Total Latency (ms)')
+    axs[0].set_xticks(x)
+    axs[0].set_xticklabels(algorithms)
+    axs[0].legend()
+    
+    # Energy Comparison
+    axs[1].bar([i - bar_width for i in x], cloud_energy, width=bar_width, label='Cloud', color='blue')
+    axs[1].bar([i for i in x], fec_energy, width=bar_width, label='FEC', color='green')
+    axs[1].bar([i + bar_width for i in x], edge_energy, width=bar_width, label='Edge', color='orange')
+    axs[1].set_title(f'Energy Comparison ({dataset_label})')
+    axs[1].set_ylabel('Total Energy (W)')
+    axs[1].set_xticks(x)
+    axs[1].set_xticklabels(algorithms)
+    axs[1].legend()
+    
+    # Network Usage Comparison
+    axs[2].bar([i - bar_width for i in x], cloud_network_usage, width=bar_width, label='Cloud', color='blue')
+    axs[2].bar([i for i in x], fec_network_usage, width=bar_width, label='FEC', color='green')
+    axs[2].bar([i + bar_width for i in x], edge_network_usage, width=bar_width, label='Edge', color='orange')
+    axs[2].set_title(f'Network Usage Comparison ({dataset_label})')
+    axs[2].set_ylabel('Total Network Usage (Mbps)')
+    axs[2].set_xticks(x)
+    axs[2].set_xticklabels(algorithms)
+    axs[2].legend()
+    
+    # Adjust layout and display
+    plt.tight_layout()
+    plt.show()
 
-# Test Data 2: High resource demands and high energy usage
-modules2 = [
-    {'id': 1, 'cpu': 40, 'memory': 50},
-    {'id': 2, 'cpu': 45, 'memory': 55},
-    {'id': 3, 'cpu': 50, 'memory': 60},
-    {'id': 4, 'cpu': 60, 'memory': 70},
-    {'id': 5, 'cpu': 35, 'memory': 45},
-    {'id': 6, 'cpu': 40, 'memory': 50},
-    {'id': 7, 'cpu': 55, 'memory': 65},
-    {'id': 8, 'cpu': 50, 'memory': 55},
-]
+import time
+import matplotlib.pyplot as plt
+from data import shuffle_fog_nodes, fog_nodes_1, modules_1, fog_nodes_2, modules_2, fog_nodes_3, modules_3
 
-fog_nodes2 = [
-    {'id': 'A', 'cpu': 100, 'memory': 120, 'cloud_latency': 5, 'fec_latency': 15, 'cloud_network_usage': 150, 'fec_network_usage': 400, 'energy_per_cpu': 0.7, 'energy_per_memory': 0.5},
-    {'id': 'B', 'cpu': 80, 'memory': 100, 'cloud_latency': 10, 'fec_latency': 20, 'cloud_network_usage': 160, 'fec_network_usage': 420, 'energy_per_cpu': 0.8, 'energy_per_memory': 0.6},
-    {'id': 'C', 'cpu': 60, 'memory': 80, 'cloud_latency': 8, 'fec_latency': 18, 'cloud_network_usage': 155, 'fec_network_usage': 410, 'energy_per_cpu': 0.9, 'energy_per_memory': 0.7},
-]
+# Define the existing functions (first_fit, next_fit, compare_algorithms, plot_combined_comparison)
 
-# Test Data 3: Small modules with lower power and latency constraints
-modules3 = [
-    {'id': 1, 'cpu': 5, 'memory': 5},
-    {'id': 2, 'cpu': 10, 'memory': 10},
-    {'id': 3, 'cpu': 5, 'memory': 5},
-    {'id': 4, 'cpu': 10, 'memory': 10},
-    {'id': 5, 'cpu': 8, 'memory': 8},
-    {'id': 6, 'cpu': 6, 'memory': 6},
-    {'id': 7, 'cpu': 9, 'memory': 9},
-    {'id': 8, 'cpu': 5, 'memory': 5},
-]
+def compare_and_plot(dataset_label, fog_nodes, modules):
+    # Shuffle the fog nodes before comparison
+    fog_nodes = shuffle_fog_nodes(fog_nodes)
+    
+    results_cloud = compare_algorithms(modules, fog_nodes, 'cloud')
+    results_fec = compare_algorithms(modules, fog_nodes, 'FEC')
+    results_edge = compare_algorithms(modules, fog_nodes, 'edge')
+    # Plot combined results
+    plot_combined_comparison(results_cloud, results_fec, results_edge, dataset_label)
 
-fog_nodes3 = [
-    {'id': 'A', 'cpu': 50, 'memory': 60, 'cloud_latency': 3, 'fec_latency': 12, 'cloud_network_usage': 80, 'fec_network_usage': 250, 'energy_per_cpu': 0.3, 'energy_per_memory': 0.2},
-    {'id': 'B', 'cpu': 40, 'memory': 50, 'cloud_latency': 4, 'fec_latency': 14, 'cloud_network_usage': 90, 'fec_network_usage': 270, 'energy_per_cpu': 0.2, 'energy_per_memory': 0.1},
-    {'id': 'C', 'cpu': 30, 'memory': 40, 'cloud_latency': 2, 'fec_latency': 10, 'cloud_network_usage': 85, 'fec_network_usage': 260, 'energy_per_cpu': 0.25, 'energy_per_memory': 0.15},
-]
+# Run comparisons and plots for all three datasets
+compare_and_plot('Dataset 1', fog_nodes_1, modules_1)
+compare_and_plot('Dataset 2', fog_nodes_2, modules_2)
+compare_and_plot('Dataset 3', fog_nodes_3, modules_3)
 
-# Run comparisons for the new datasets
-compare_algorithms(modules1, fog_nodes1, 'cloud')
-compare_algorithms(modules1, fog_nodes1, 'FEC')
-
-compare_algorithms(modules2, fog_nodes2, 'cloud')
-compare_algorithms(modules2, fog_nodes2, 'FEC')
-
-compare_algorithms(modules3, fog_nodes3, 'cloud')
-compare_algorithms(modules3, fog_nodes3, 'FEC')
-
+plt.show()  # Show all plots at once
